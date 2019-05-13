@@ -1,59 +1,222 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
-
-<head>
-    <meta charset="utf-8">
+  <head>
+    <meta charset="utf-8" />
     <title></title>
-    <meta name="description" content="">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/nes/10.0.2/client.js"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script
+      src="https://code.jquery.com/jquery-1.12.4.min.js"
+      integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ="
+      crossorigin="anonymous"
+    ></script>
+
     <script src="./script.js"></script>
+    <link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon" />
+
     <!-- <link rel="stylesheet" href="css/styles.css">
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/nes/10.0.2/client.js"></script> -->
-</head>
+        -->
+  </head>
 
-<body>
-    <p>Hello Codders</p>
-    <p id='AAPL'></p>
-    <p id='MSFT'></p>
-</body>
+  <body>
+    <p>Hello Coders</p>
+    <p><span id="Transactions"></span></p>
+    <table>
+      <tr>
+        <th width="150px;">Stock Price</th>
+        <th width="100px;">Allocation</th>
+        <th>Buy</th>
+        <th>Sell</th>
+        <th>Follow</th>
+        <th>Un-follow</th>
+      </tr>
+      <tr>
+        <td><span id="ACME"></span></td>
+        <td><span id="ACME-allocation"></span></td>
+        <td>
+          <button onclick="makeTransaction('BUY', 'ACME', getTransactions)">
+            BUY
+          </button>
+        </td>
+        <td>
+          <button onclick="makeTransaction( 'SELL', 'ACME', getTransactions)">
+            SELL
+          </button>
+        </td>
+        <td>
+          <button onclick="updateStockList('ADD', 'ACME', getUserData);">
+            Follow
+          </button>
+        </td>
+        <td>
+          <button onclick="updateStockList('REMOVE', 'ACME', getUserData);">
+            Unfollow
+          </button>
+        </td>
+      </tr>
+      </tr>
+      <tr>
+        <td><span id="STRK"></span></td>
+        <td><span id="STRK-allocation"></span></td>
+        <td>
+          <button onclick="makeTransaction('BUY', 'STRK', getTransactions)">
+            BUY
+          </button>
+        </td>
+        <td>
+          <button onclick="makeTransaction( 'SELL', 'STRK', getTransactions)">
+            SELL
+          </button>
+        </td>
+        <td>
+          <button onclick="updateStockList('ADD', 'STRK', getUserData);">
+            Follow
+          </button>
+        </td>
+        <td>
+          <button onclick="updateStockList('REMOVE', 'STRK', getUserData);">
+            Unfollow
+          </button>
+        </td>
+      </tr>
+    </table>
+  </body>
 
-<script>
-    if (!localStorage['userId']) {
-        localStorage['userId'] = 'User' + new Date().getMilliseconds()
+  <script>
+    function httpGet(endpoint, callback) {
+      var xmlHttp = new XMLHttpRequest();
+      xmlHttp.open('GET', endpoint, true);
+      xmlHttp.responseType = 'json';
+      xmlHttp.setRequestHeader('userid', localStorage['userid']);
+      xmlHttp.onload = function() {
+        if (xmlHttp.status === 200) {
+          if (callback) callback(xmlHttp.response);
+        }
+      };
+      xmlHttp.send(null);
     }
 
-    function updatePrice(update) {
-        document.getElementById(update.stock).innerHTML = `<b>${update.stock}</b> ${update.price ? update.price.toFixed(2) : 'n/a'}`;
+    function httpPost(endpoint, data, callback) {
+      var xmlHttp = new XMLHttpRequest();
+      xmlHttp.open('POST', endpoint, true);
+      xmlHttp.setRequestHeader('userid', localStorage['userid']);
+      xmlHttp.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
+      xmlHttp.responseType = 'json';
+      xmlHttp.onload = function() {
+        if (xmlHttp.status === 200) {
+          if (callback) callback(xmlHttp.response);
+        }
+      };
+      xmlHttp.send(JSON.stringify(data));
     }
-    subscribeToLiveUpdates('AAPL', updatePrice);
-    subscribeToLiveUpdates('MSFT', updatePrice);
+  </script>
+  <script>
+    if (!localStorage['userid']) {
+      localStorage['userid'] = 'User' + new Date().getMilliseconds();
+    }
+    function updateAllocation(update) {
+      document.getElementById(update.symbol + '-allocation').innerHTML = update.amount;
+    }
 
     function getUserData() {
-        var xmlHttp = new XMLHttpRequest();
-        xmlHttp.open("GET", './userdata', false);
-        xmlHttp.setRequestHeader("userid", localStorage['userId']);
-        xmlHttp.send(null);
-        return xmlHttp.responseText;
+      httpGet('./userdata', function(response) {
+        console.log('getUserData', response);
+        ['ACME', 'STRK'].forEach((stock) => {
+          let result = response.allocations.find((x) => x.symbol == 'ACME');
+          if (result) {
+            updateAllocation(result);
+          }
+        });
+      });
     }
 
-    function postUserData(data, callback) {
-        var xmlHttp = new XMLHttpRequest();
-        xmlHttp.open("POST", './userdata', false);
-        xmlHttp.setRequestHeader("userid", localStorage['userId']);
-        xmlHttp.onreadystatechange = function () {
-            if (xmlHttp.readyState === 4 && xmlHttp.status === 200) {
-                console.log(xmlHttp.responseText);
-                if (callback) callback();
-            }
-        };
-        xmlHttp.send(JSON.stringify(data));
+    function getTransactions() {
+      httpGet('./transactions', function(response) {
+        console.log('getTransactions', response);
+      });
     }
 
-    postUserData({
-        userId: localStorage['userId'],
-        stocks: ['AAPL', 'MSFT']
-    }, getUserData)
-</script>
+    function makeTransaction(side, symbol, callback) {
+      var data = {
+        side: side,
+        amount: 5,
+        symbol: symbol
+      };
+      httpPost('./transactions', data, function(response) {
+        console.log('getTransactions', response);
+        if (callback) callback(response);
+      });
+    }
 
+    function updateStockList(action, symbol, callback) {
+      var data = {
+        action: action,
+        symbol: symbol
+      };
+      httpPost('./userdata/watchlist', data, function(response) {
+        console.log('updateStockList', response);
+        if (callback) callback(response);
+      });
+    }
+
+    setTimeout(function() {
+      getUserData();
+      getTransactions();
+    }, 500);
+  </script>
+  <script>
+    function updatePrice(update) {
+      document.getElementById(update.stock).innerHTML = `<b>${update.stock}</b> ${update.price ? update.price.toFixed(4) : 'n/a'}`;
+    }
+    initWebSocketClient(function() {
+      subscribeToLiveUpdates('STRK', updatePrice);
+      subscribeToLiveUpdates('ACME', updatePrice);
+    });
+  </script>
+  <script>
+    function plotChartData(data) {
+      Highcharts.chart('chartcontianer', {
+        chart: {
+          type: 'line'
+        },
+        title: {
+          text: 'HIstoric Chart Data'
+        },
+        xAxis: { type: 'datetime' },
+        series: [
+          {
+            name: 'detailed',
+            data: data.detailed.map(function(obj) {
+              return {
+                x: new Date(obj.date),
+                y: obj.price
+              };
+            })
+          },
+          {
+            name: 'aggregated',
+            data: data.aggregated.map(function(obj) {
+              return {
+                x: new Date(obj.date),
+                y: obj.price
+              };
+            })
+          }
+        ]
+      });
+    }
+
+    function getHistoricData(stock, period, callback) {
+      httpGet('stocks/' + stock + '/price/' + period, function(response) {
+        console.log('getHistoricData', response);
+        if (callback) callback(response);
+      });
+    }
+
+    getHistoricData('ACME', 'yearly', plotChartData);
+    // getHistoricData('ACME', 'today', plotChartData);
+  </script>
+  <div id="chartcontianer" style="height: 300px"></div>
 </html>

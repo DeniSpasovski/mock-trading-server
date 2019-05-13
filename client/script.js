@@ -1,19 +1,23 @@
+let nesClient;
+function initWebSocketClient(callback) {
+  console.log('stock updates', 'start');
+  let protocol = window.location.protocol.indexOf('https') >= 0 ? 'wss://' : 'ws://';
+
+  nesClient = new nes.Client(protocol + window.location.origin.split('//').pop());
+  const start = async () => {
+    await nesClient.connect();
+    callback();
+  };
+
+  start();
+}
 
 function subscribeToLiveUpdates(stock, callback) {
-    console.log('stock updates', 'start');
-    const client = new nes.Client('ws://localhost:8008');
-    const start = async () => {
-
-        await client.connect();
-        client.subscribe('/livestream/' + stock, (update, flags) => {
-            if (callback) callback(update);
-            // console.log('stock updates: ' + stock, update)
-        });
-    };
-
-    start();
-    callback({
-        stock: stock
-    })
-    return client;
+  callback({
+    stock: stock
+  });
+  nesClient.subscribe('/livestream/' + stock, (update, flags) => {
+    if (callback) callback(update);
+    // console.log('stock updates: ' + stock, update)
+  });
 }
