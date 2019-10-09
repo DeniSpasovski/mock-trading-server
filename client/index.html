@@ -66,7 +66,7 @@
           </button>
         </td>
         <td>
-          <button onclick="makeTransaction( 'SELL', 'STRK', getTransactions)">
+          <button onclick="makeTransaction('SELL', 'STRK', getTransactions)">
             SELL
           </button>
         </td>
@@ -124,7 +124,7 @@
       httpGet('./userdata', function(response) {
         console.log('getUserData', response);
         ['ACME', 'STRK'].forEach((stock) => {
-          let result = response.allocations.find((x) => x.symbol == 'ACME');
+          let result = response.allocations.find((x) => x.symbol == stock);
           if (result) {
             updateAllocation(result);
           }
@@ -147,6 +147,7 @@
       httpPost('./transactions', data, function(response) {
         console.log('getTransactions', response);
         if (callback) callback(response);
+        getUserData();
       });
     }
 

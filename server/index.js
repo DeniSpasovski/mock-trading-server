@@ -12,9 +12,10 @@ const staticFileService = require('./services/staticFileService');
 const stockDataService = require('./services/stockDataService');
 const userDataService = require('./services/userDataService');
 const transactionDataService = require('./services/transactionDataService');
+let appInsights;
 
 if (process.env.APPINSIGHTS_INSTRUMENTATIONKEY) {
-  const appInsights = require('applicationinsights');
+  appInsights = require('applicationinsights');
   appInsights.setup(process.env.APPINSIGHTS_INSTRUMENTATIONKEY);
   appInsights.start();
 }
