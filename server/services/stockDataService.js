@@ -1,4 +1,4 @@
-const Joi = require('@hapi/joi');
+const Joi = require('joi');
 
 let server = null;
 var stockList = require('../data/stockList.json');
@@ -33,11 +33,11 @@ const routes = [
       notes: 'Returns the latest (mock) price for a stock symbol',
       tags: ['api'],
       validate: {
-        params: {
+        params: Joi.object({
           symbol: Joi.string()
             .required()
             .description('Stock Symbol')
-        }
+        })
       }
     },
     handler: function(request, h) {
@@ -61,11 +61,11 @@ const routes = [
       notes: 'Returns the historic (mock) price for last year for a single stock',
       tags: ['api'],
       validate: {
-        params: {
+        params: Joi.object({
           symbol: Joi.string()
             .required()
             .description('Stock Symbol')
-        }
+        })
       }
     },
     handler: function(request, h) {
@@ -85,11 +85,11 @@ const routes = [
       notes: 'Returns the (mock) price for for the whole day for a single stock',
       tags: ['api'],
       validate: {
-        params: {
+        params: Joi.object({
           symbol: Joi.string()
             .required()
             .description('Stock Symbol')
-        }
+        })
       }
     },
     handler: function(request, h) {

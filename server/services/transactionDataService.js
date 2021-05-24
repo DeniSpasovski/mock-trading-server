@@ -1,4 +1,4 @@
-const Joi = require('@hapi/joi');
+const Joi = require('joi');
 
 const userDataServer = require('./userDataService');
 const stockDataServer = require('./stockDataService');
@@ -20,11 +20,11 @@ const routes = [
       description: 'Get user transactions',
       tags: ['api'],
       validate: {
-        headers: {
+        headers: Joi.object({
           userid: Joi.string()
             .required()
             .description('userid')
-        },
+        }),
         options: {
           allowUnknown: true
         }
@@ -41,17 +41,17 @@ const routes = [
       description: 'Execute a transaction',
       tags: ['api'],
       validate: {
-        headers: {
+        headers: Joi.object({
           userid: Joi.string()
             .required()
             .description('userid')
-        },
+        }),
         payload: Joi.object({
           symbol: Joi.string()
             .required()
             .description('symbol'),
           side: Joi.string()
-            .valid(['BUY', 'SELL'])
+            .valid('BUY', 'SELL')
             .required()
             .description('BUY or SELL'),
           amount: Joi.number()

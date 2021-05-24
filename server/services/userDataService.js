@@ -1,4 +1,4 @@
-const Joi = require('@hapi/joi');
+const Joi = require('joi');
 const stockDataServer = require('./stockDataService');
 const ServerResponse = require('../models/serverResponse');
 
@@ -37,11 +37,11 @@ const routes = [
       description: 'Get user data',
       tags: ['api'],
       validate: {
-        headers: {
+        headers: Joi.object({
           userid: Joi.string()
             .required()
             .description('userid')
-        },
+        }),
         options: {
           allowUnknown: true
         }
@@ -58,11 +58,11 @@ const routes = [
       description: 'Get user allocations',
       tags: ['api'],
       validate: {
-        headers: {
+        headers: Joi.object({
           userid: Joi.string()
             .required()
             .description('userid')
-        },
+        }),
         options: {
           allowUnknown: true
         }
@@ -80,11 +80,11 @@ const routes = [
       description: 'Get user liquidity',
       tags: ['api'],
       validate: {
-        headers: {
+        headers: Joi.object({
           userid: Joi.string()
             .required()
             .description('userid')
-        },
+        }),
         options: {
           allowUnknown: true
         }
@@ -101,11 +101,11 @@ const routes = [
       description: 'Get users stock watch list',
       tags: ['api'],
       validate: {
-        headers: {
+        headers: Joi.object({
           userid: Joi.string()
             .required()
             .description('userid')
-        },
+        }),
         options: {
           allowUnknown: true
         }
@@ -122,17 +122,17 @@ const routes = [
       description: 'Add or remove stock to watch list',
       tags: ['api'],
       validate: {
-        headers: {
+        headers: Joi.object({
           userid: Joi.string()
             .required()
             .description('userid')
-        },
+        }),
         payload: Joi.object({
           symbol: Joi.string()
             .required()
             .description('symbol'),
           action: Joi.string()
-            .valid(['ADD', 'REMOVE'])
+            .valid('ADD', 'REMOVE')
             .required()
             .description('ADD or REMOVE')
         }).label('FollowInfo'),

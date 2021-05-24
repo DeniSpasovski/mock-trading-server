@@ -4,8 +4,8 @@ const Hapi = require('@hapi/hapi');
 const Nes = require('@hapi/nes');
 const Inert = require('@hapi/inert');
 const Vision = require('@hapi/vision');
-const Good = require('@hapi/good');
 const HapiSwagger = require('hapi-swagger');
+const rateLimitMemory = require('./plugins/rateLimitMemory');
 
 const Pack = require('../package');
 const staticFileService = require('./services/staticFileService');
@@ -33,7 +33,9 @@ const server = Hapi.server({
 
 server.ext({
   type: 'onRequest',
-  method: function(request, h) {
+  method: function (request, h) {
+    //console.log(new Date().toISOString(), request.info.id ,request.method, request.path, request.headers.userid)
+
     if (request.headers.userid) {
       if (process.env.APPINSIGHTS_INSTRUMENTATIONKEY) {
         appInsights.defaultClient.context.tags[appInsights.defaultClient.context.keys.userId] = request.headers.userid;
@@ -50,34 +52,20 @@ const swaggerOptions = {
   }
 };
 
-const loggingOptions = {
-  ops: {
-    interval: 1000
-  },
-  reporters: {
-    myConsoleReporter: [
-      {
-        module: '@hapi/good-squeeze',
-        name: 'Squeeze',
-        args: [{ log: '*', response: '*' }]
-      },
-      {
-        module: '@hapi/good-console',
-        args: [{ format: 'YYYY-MM-DD|HH:mm:ss.SSS' }]
-      },
-      'stdout'
-    ]
-  }
-};
-
 // Start the server
 async function start() {
   try {
-    await server.register({
-      plugin: Good,
-      options: loggingOptions
-    });
+    await server.register(rateLimitMemory);
     await server.register(Nes);
+    await server.register({
+      plugin: require('hapi-pino'),
+      options: {
+        prettyPrint: process.env.NODE_ENV !== 'production',
+        // Redact Authorization headers, see https://getpino.io/#/docs/redaction
+        redact: ['req.headers.authorization']
+      }
+    });
+
     await server.register([
       Inert,
       Vision,

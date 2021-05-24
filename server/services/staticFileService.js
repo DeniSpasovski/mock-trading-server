@@ -4,7 +4,7 @@ exports.registerHttpHandler = function registerHttpHandler(server) {
     path: '/{param*}',
     handler: {
       directory: {
-        path: './client',
+        path: '../client',
         index: ['index.html']
       }
     }
