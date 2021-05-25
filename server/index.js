@@ -5,6 +5,8 @@ const Nes = require('@hapi/nes');
 const Inert = require('@hapi/inert');
 const Vision = require('@hapi/vision');
 const HapiSwagger = require('hapi-swagger');
+const HapiPino = require('hapi-pino');
+
 const rateLimitMemory = require('./plugins/rateLimitMemory');
 
 const Pack = require('../package');
@@ -58,7 +60,7 @@ async function start() {
     await server.register(rateLimitMemory);
     await server.register(Nes);
     await server.register({
-      plugin: require('hapi-pino'),
+      plugin: HapiPino,
       options: {
         prettyPrint: process.env.NODE_ENV !== 'production',
         // Redact Authorization headers, see https://getpino.io/#/docs/redaction

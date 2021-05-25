@@ -10,6 +10,11 @@ internals.rateLimiter = new RateLimiterMemory({
   duration: 60 //in seconds
 });
 
+internals.rateLimiterPerHour = new RateLimiterMemory({
+  points: 5 * 1000, // 5k requests
+  duration: 60 * 60 // per 1 hours
+});
+
 internals.getRequestIdentifier = function getRequestIdentifier(request) {
   var forwardedUrl = request.headers['x-forwarded-for'];
   if (forwardedUrl && forwardedUrl.length) {
@@ -25,7 +30,9 @@ module.exports = {
   register: function (server) {
     server.ext('onPreAuth', async (request, h) => {
       try {
-        await internals.rateLimiter.consume(internals.getRequestIdentifier(request));
+        let reqIdentifier = internals.getRequestIdentifier(request);
+        await internals.rateLimiter.consume(reqIdentifier);
+        await internals.rateLimiterPerHour.consume(reqIdentifier);
         return h.continue;
       } catch (rej) {
         let error;
